@@ -1,0 +1,24 @@
+{
+  "name": "heatmap",
+  "version": "1.0.0",
+  "description": "Freecodecamp project: heatmap of surface temperatures.",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teekaygithub/heatmap.git"
+  },
+  "author": "Tom Kato",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/teekaygithub/heatmap/issues"
+  },
+  "homepage": "https://github.com/teekaygithub/heatmap#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.6"
+  }
+}

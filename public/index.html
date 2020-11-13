@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="./index.css" />
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <title>Heat Map</title>
+</head>
+<body>
+    <div id="container">
+        <h3 id="title">Monthly-Global Land Surface Temperature</h3>
+        <h4 id="description">1753-2015</h4>
+    </div>
+    <script>
+        d3.json("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json")
+          .then(function(mydata) {
+            const baseTemp = mydata.baseTemperature;
+            const monthlyVarArr = mydata.monthlyVariance;
+            const w = 1600;
+            const h = 600;
+            const w_plot = 1200;
+            const h_plot = 400;
+            const PADDING = 70;
+            const DATALEN = mydata.monthlyVariance.length/12;
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            
+            <!-- DEBUG -->
+            console.log(baseTemp);
+            console.log(monthlyVarArr);
+            console.log(DATALEN);
+            
+            const colorDomain = [];
+            for (let i = 2.8; i< 13; i+=1.1) {
+                colorDomain.push(i);
+            }
+            const myColor = d3.scaleLinear().domain(colorDomain).range(["#3333FF","#3399FF","#66B2FF","#99CCFF","#FFFF99","#FFCC99","#FFB266","#FF6666","#CC0000"]);
+            for(let i =3;i<14;i++){
+                console.log(myColor(i));
+            }
+            console.log(colorDomain);
+            const svg = d3.select("div").append("svg").attr("width", w+PADDING*2).attr("height", h+PADDING*2);
+            
+            <!-- svg.append("rect").attr("x",50) -->
+               <!-- .attr("y",h-50) -->
+               <!-- .attr("width",50) -->
+               <!-- .attr("height",50) -->
+               <!-- .attr("fill","blue"); -->
+            
+
+            <!-- AXIS -->
+            const xScale = d3.scaleLinear().domain([1753,2015]).range([0,w_plot]);
+            const xAxis = d3.axisBottom(xScale).tickFormat(d=>d.toString());
+            xAxis.ticks(26);
+            <!-- The x-axis offset below accounts for the plot area height and the height of the last rectangle element. -->
+            const xAxisOffset = h_plot + h_plot/11;
+            
+            const yScale = d3.scaleLinear().domain([12,1]).range([0,h_plot]);
+            const yAxis = d3.axisLeft(yScale).tickFormat((d,i)=>months[i]);
+            
+            svg.append("g").attr("transform", "translate("+PADDING+","+xAxisOffset+")").attr("id","x-axis").call(xAxis);
+            svg.append("g").attr("transform", "translate("+PADDING+",18.18)").attr("id","y-axis").call(yAxis);
+            svg.selectAll("rect")
+               .data(mydata.monthlyVariance)
+               .enter()
+               .append("rect")
+               .attr("x",d=>xScale(d.year)+PADDING)
+               .attr("y",d=>h_plot-yScale(d.month))
+               .attr("width",w_plot/DATALEN)
+               .attr("height",h_plot/11)
+               .attr("class","cell")
+               .attr("data-month", d=>d.month-1)
+               .attr("data-year", d=>d.year)
+               .attr("data-temp", d=>baseTemp+d.variance)
+               .attr("data-var", d=>d.variance)
+               .attr("fill",(d)=>myColor(baseTemp+d.variance))
+               .on("mouseover", mouseover)
+               .on("mouseout", mouseout)
+               
+            <!-- CHART LEGEND -->
+            const legend = svg.append("g").attr("id","legend");
+            legend.selectAll("rect")
+                  .data(colorDomain)
+                  .enter()
+                  .append("rect")
+                  .attr("x", (d,i)=>i*40+PADDING*3)
+                  .attr("y", 550)
+                  .attr("width", "40px")
+                  .attr("height", "40px")
+                  .attr("fill",(d)=>myColor(d));
+            
+            <!-- TOOLTIP -->
+            let tooltip = d3.select("#container")
+                            .append("div")
+                            .attr("class","tooltip")
+                            .attr("id","tooltip")
+                            .style("width" ,"200px")
+                            .style("height", "50px")
+                            .style("display","none");
+                            
+            function mouseover() {
+                const current = d3.select(this);
+                let leftOffset = parseInt(current.attr("x"))+PADDING;
+                let topOffset = parseInt(current.attr("y"));
+                <!-- console.log("current position: ",current.attr('x'),current.attr('y')); //debug -->
+                tooltip.style("display","inline")
+                       .style("left",leftOffset.toString()+"px")
+                       .style("top",topOffset.toString()+"px")
+                       .attr("data-year",current.attr("data-year"))
+                       .attr("data-temp",current.attr("data-temp"))
+                       .html(current.attr("data-year")+" "+months[current.attr("data-month")]+"<br>"+current.attr("data-temp")+"C<br>"+current.attr("data-var")+"C");
+            }
+            
+            function mouseout () {
+                tooltip.style("display","none");
+            }
+            
+          })
+    </script>
+    <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+</body>
+</html>
